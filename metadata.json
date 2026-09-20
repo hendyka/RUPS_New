@@ -1,0 +1,6 @@
+{
+  "name": "RUPS Timeline Automation",
+  "description": "Kalkulator dan automasi jadwal tahapan RUPS dan Dividen sesuai regulasi POJK OJK dan Bursa Efek Indonesia (IDX).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
