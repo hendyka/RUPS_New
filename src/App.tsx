@@ -6,6 +6,7 @@ import {
   addWorkDays, 
   isWeekendOrHoliday, 
   parseDate, 
+  formatDateIso,
   MONTH_MAP 
 } from './utils/rupsCalculator';
 import { TimelineItem, AlertNotification, ViewMode } from './types';
@@ -25,16 +26,27 @@ import {
   AlertTriangle, 
   X, 
   ExternalLink,
-  Sparkles
+  Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 
 export default function App() {
-  // State
-  const [rupsDate, setRupsDate] = useState<string>('2026-05-11');
-  const [noticeDate, setNoticeDate] = useState<string>('2026-03-11');
+  // State: Default holidays
   const [holidays, setHolidays] = useState<string[]>(
     () => DEFAULT_HOLIDAYS_2026.map((h) => h.date).sort()
   );
+
+  // State: Default noticeDate = Hari ini (Today)
+  const [noticeDate, setNoticeDate] = useState<string>(() => formatDateIso(new Date()));
+
+  // State: Default rupsDate = Prakiraan RUPS Tercepat yang dihitung dari Hari Ini (Today)
+  const [rupsDate, setRupsDate] = useState<string>(() => {
+    const today = formatDateIso(new Date());
+    const initialHols = DEFAULT_HOLIDAYS_2026.map((h) => h.date).sort();
+    return calculateEarliestRupsDate(today, initialHols) || today;
+  });
+
   const [showDividen, setShowDividen] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -43,6 +55,7 @@ export default function App() {
   const [isDateShifted, setIsDateShifted] = useState<boolean>(false);
   const [isSingleHtmlModalOpen, setIsSingleHtmlModalOpen] = useState<boolean>(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
   const showAlert = (text: string, type: 'success' | 'alert' | 'error' = 'success') => {
     setAlert({ id: String(Date.now()), text, type });
@@ -181,7 +194,7 @@ export default function App() {
       )}
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+      <div className="max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 pt-6 space-y-6">
         {/* Header */}
         <Header
           timelineItems={timelineItems}
@@ -209,43 +222,77 @@ export default function App() {
           }}
         />
 
-        {/* View Mode Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
-          <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200/90 rounded-2xl shadow-xs w-fit">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center gap-2 ${
-                viewMode === 'table'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <TableIcon className="w-4 h-4" />
-              <span>Tabel Resmi Kepatuhan</span>
-            </button>
+        {/* View Mode Tabs & Panel Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200/90 rounded-2xl shadow-xs w-fit">
+              <button
+                onClick={() => setViewMode('table')}
+                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center gap-2 ${
+                  viewMode === 'table'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <TableIcon className="w-4 h-4" />
+                <span>Tabel Resmi Kepatuhan</span>
+              </button>
 
-            <button
-              onClick={() => setViewMode('visual')}
-              className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center gap-2 ${
-                viewMode === 'visual'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <GitCommit className="w-4 h-4" />
-              <span>Alur Visual Stepper</span>
-            </button>
+              <button
+                onClick={() => setViewMode('visual')}
+                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center gap-2 ${
+                  viewMode === 'visual'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <GitCommit className="w-4 h-4" />
+                <span>Alur Visual Stepper</span>
+              </button>
 
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center gap-2 ${
+                  viewMode === 'calendar'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <CalendarIcon className="w-4 h-4" />
+                <span>Matriks Kalender</span>
+              </button>
+            </div>
+
+            {/* Hide/Show Left Sidebar Toggle Button */}
             <button
-              onClick={() => setViewMode('calendar')}
-              className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center gap-2 ${
-                viewMode === 'calendar'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              onClick={() => {
+                const nextState = !isSidebarOpen;
+                setIsSidebarOpen(nextState);
+                showAlert(
+                  nextState 
+                    ? 'Panel Kalender & Libur Bursa dibuka.' 
+                    : 'Panel Kalender disembunyikan. Tampilan tabel diperluas.',
+                  'success'
+                );
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center gap-2 border shadow-xs ${
+                !isSidebarOpen
+                  ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-300/50'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
               }`}
+              title={isSidebarOpen ? 'Sembunyikan Panel Libur (Perluas Lebar Tabel)' : 'Tampilkan Panel Libur'}
             >
-              <CalendarIcon className="w-4 h-4" />
-              <span>Matriks Kalender</span>
+              {isSidebarOpen ? (
+                <>
+                  <PanelLeftClose className="w-4 h-4 text-slate-500" />
+                  <span>Sembunyikan Panel Kiri</span>
+                </>
+              ) : (
+                <>
+                  <PanelLeftOpen className="w-4 h-4 text-white" />
+                  <span>Tampilkan Panel Kiri</span>
+                </>
+              )}
             </button>
           </div>
 
@@ -257,22 +304,24 @@ export default function App() {
           </div>
         </div>
 
-        {/* 2-Column Responsive Workspace */}
+        {/* Responsive Workspace Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Sidebar: Holidays & Category info */}
-          <aside className="lg:col-span-4 space-y-6">
-            <HolidaySidebar
-              holidays={holidays}
-              onAddHoliday={handleAddHoliday}
-              onRemoveHoliday={handleRemoveHoliday}
-              onResetHolidays={handleResetHolidays}
-              onBatchAddHolidays={handleBatchAddHolidays}
-              onShowAlert={showAlert}
-            />
-          </aside>
+          {isSidebarOpen && (
+            <aside className="lg:col-span-4 space-y-6 animate-in fade-in slide-in-from-left-4 duration-200">
+              <HolidaySidebar
+                holidays={holidays}
+                onAddHoliday={handleAddHoliday}
+                onRemoveHoliday={handleRemoveHoliday}
+                onResetHolidays={handleResetHolidays}
+                onBatchAddHolidays={handleBatchAddHolidays}
+                onShowAlert={showAlert}
+              />
+            </aside>
+          )}
 
           {/* Main Area: Active View Mode */}
-          <main className="lg:col-span-8 space-y-6">
+          <main className={`${isSidebarOpen ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-6 transition-all duration-300`}>
             {viewMode === 'table' && (
               <TimelineTable
                 items={timelineItems}
@@ -283,6 +332,17 @@ export default function App() {
                 onFilterChange={setFilterCategory}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => {
+                  const nextState = !isSidebarOpen;
+                  setIsSidebarOpen(nextState);
+                  showAlert(
+                    nextState 
+                      ? 'Panel Kalender & Libur Bursa dibuka.' 
+                      : 'Panel Kalender disembunyikan. Tampilan tabel diperluas.',
+                    'success'
+                  );
+                }}
               />
             )}
 
