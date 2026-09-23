@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar as CalendarIcon, ArrowRight, CheckCircle2, Zap, Clock, AlertTriangle } from 'lucide-react';
-import { formatDateIndonesian, getDaysDiffFromToday } from '../utils/rupsCalculator';
+import { formatDateIndonesian, getDaysDiffFromToday, formatDateIso } from '../utils/rupsCalculator';
 
 interface CalculatorCardProps {
   noticeDate: string;
@@ -28,9 +28,10 @@ export const CalculatorCard: React.FC<CalculatorCardProps> = ({
   // Helper presets
   const currentYear = new Date().getFullYear();
   const presets = [
-    { label: 'Mei 2026', date: '2026-05-11' },
-    { label: 'Juni 2026 (Batas RUPST)', date: '2026-06-25' },
+    ...(earliestRupsDate ? [{ label: 'RUPS Tercepat', date: earliestRupsDate }] : []),
+    { label: `Juni ${currentYear} (Batas RUPST)`, date: `${currentYear}-06-25` },
     { label: 'Bulan Depan', date: getNextMonthDate() },
+    { label: 'Mei 2026', date: '2026-05-11' },
   ];
 
   function getNextMonthDate() {
@@ -61,9 +62,19 @@ export const CalculatorCard: React.FC<CalculatorCardProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
             {/* Input Date */}
             <div className="sm:col-span-6 bg-white border border-indigo-200 rounded-2xl p-3 shadow-xs focus-within:ring-2 focus-within:ring-indigo-500">
-              <label className="block text-[11px] font-bold text-indigo-900/70 uppercase tracking-wider mb-1">
-                Tgl Surat Pemberitahuan OJK / BEI:
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-bold text-indigo-900/70 uppercase tracking-wider">
+                  Tgl Surat Pemberitahuan OJK / BEI:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => onNoticeDateChange(formatDateIso(new Date()))}
+                  className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold transition-colors"
+                  title="Gunakan tanggal hari ini"
+                >
+                  Hari Ini
+                </button>
+              </div>
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-indigo-500 shrink-0" />
                 <input
