@@ -12,9 +12,10 @@ import {
   Clock, 
   Copy, 
   Check, 
-  Share2,
   SlidersHorizontal,
-  Search
+  Search,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 
 interface TimelineTableProps {
@@ -26,6 +27,8 @@ interface TimelineTableProps {
   onFilterChange: (cat: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const TimelineTable: React.FC<TimelineTableProps> = ({
@@ -37,6 +40,8 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
   onFilterChange,
   searchQuery,
   onSearchChange,
+  isSidebarOpen = true,
+  onToggleSidebar,
 }) => {
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
 
@@ -133,18 +138,36 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
       {/* Top Filter & Search Bar */}
-      <div className="p-5 md:p-6 border-b border-slate-200/80 bg-slate-50/50 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg md:text-xl font-extrabold text-slate-900 flex items-center gap-2">
-              <span>Hasil Jadwal Resmi Kepatuhan RUPS</span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
-                {items.length} Agenda
-              </span>
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Dihitung berdasarkan hari kalender dan hari kerja bursa resmi sesuai POJK 15/2020.
-            </p>
+      <div className="p-4 sm:p-6 border-b border-slate-200/80 bg-slate-50/50 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-3">
+            {onToggleSidebar && (
+              <button
+                onClick={onToggleSidebar}
+                className={`p-2 rounded-xl border text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 shadow-xs ${
+                  isSidebarOpen
+                    ? 'bg-white hover:bg-slate-100 text-slate-600 border-slate-200'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-700 ring-2 ring-indigo-300/50'
+                }`}
+                title={isSidebarOpen ? 'Sembunyikan Panel Libur (Perluas Tampilan Tabel)' : 'Tampilkan Panel Libur'}
+              >
+                {isSidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
+                <span className="hidden sm:inline text-xs font-semibold">
+                  {isSidebarOpen ? 'Lipat Kiri' : 'Buka Kiri'}
+                </span>
+              </button>
+            )}
+            <div>
+              <h2 className="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                <span>Hasil Jadwal Resmi Kepatuhan RUPS</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                  {items.length} Agenda
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Dihitung berdasarkan hari kalender dan hari kerja bursa resmi sesuai POJK 15/2020.
+              </p>
+            </div>
           </div>
 
           {/* Search box */}
@@ -188,14 +211,14 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
 
       {/* Main Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm border-collapse">
+        <table className="w-full text-left text-sm border-collapse table-auto">
           <thead>
             <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 text-[11px] font-extrabold uppercase tracking-wider">
-              <th className="px-4 py-3.5 text-center w-14">No</th>
-              <th className="px-5 py-3.5 min-w-[280px]">Kegiatan / Agenda</th>
-              <th className="px-5 py-3.5 min-w-[340px]">Ketentuan & Dasar Regulasi</th>
-              <th className="px-5 py-3.5 whitespace-nowrap min-w-[200px]">Tanggal Pelaksanaan Sah</th>
-              <th className="px-4 py-3.5 text-center w-16 no-print">Aksi</th>
+              <th className="px-3 py-3.5 text-center w-12 shrink-0">No</th>
+              <th className="px-4 py-3.5 min-w-[200px]">Kegiatan / Agenda</th>
+              <th className="px-4 py-3.5 min-w-[240px]">Ketentuan & Dasar Regulasi</th>
+              <th className="px-4 py-3.5 min-w-[170px] whitespace-nowrap">Tanggal Pelaksanaan Sah</th>
+              <th className="px-3 py-3.5 text-center w-12 shrink-0 no-print">Aksi</th>
             </tr>
           </thead>
 
@@ -219,16 +242,16 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
                     className={`border-b ${style.row} transition-colors group`}
                   >
                     {/* No */}
-                    <td className="px-4 py-4 text-center font-black opacity-70">
+                    <td className="px-3 py-3.5 text-center font-black opacity-70">
                       {idx + 1}
                     </td>
 
                     {/* Title */}
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3.5">
                       <div className="flex items-start gap-2.5">
                         <span className="shrink-0 mt-0.5">{style.icon}</span>
                         <div>
-                          <span className={`font-black text-sm md:text-base leading-snug block ${isHighlight ? 'text-white' : 'text-slate-900'}`}>
+                          <span className={`font-black text-xs sm:text-sm md:text-base leading-snug block ${isHighlight ? 'text-white' : 'text-slate-900'}`}>
                             {item.title}
                           </span>
                           {item.notes && (
@@ -241,12 +264,12 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
                     </td>
 
                     {/* Description & Legal Basis */}
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3.5">
                       <p className={`text-xs leading-relaxed ${isHighlight ? 'text-white/90 font-medium' : 'text-slate-700 font-semibold'}`}>
                         {item.desc}
                       </p>
                       {item.legalBasis && (
-                        <span className={`inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded ${
+                        <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded ${
                           isHighlight ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
                         }`}>
                           {item.legalBasis}
@@ -255,23 +278,23 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
                     </td>
 
                     {/* Date */}
-                    <td className="px-5 py-4 whitespace-nowrap align-middle">
+                    <td className="px-4 py-3.5 align-middle">
                       <div className="flex flex-col gap-1">
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs md:text-sm font-extrabold ${style.pill} shadow-xs w-fit`}>
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{formatDateIndonesian(item.date)}</span>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs md:text-sm font-extrabold ${style.pill} shadow-xs w-fit`}>
+                          <Calendar className="w-3.5 h-3.5 shrink-0" />
+                          <span className="whitespace-normal sm:whitespace-nowrap">{formatDateIndonesian(item.date)}</span>
                         </div>
-                        <span className={`text-[10px] font-bold px-1.5 ${isHighlight ? 'text-emerald-100' : diff === 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                        <span className={`text-[10px] font-bold px-1 ${isHighlight ? 'text-emerald-100' : diff === 0 ? 'text-rose-600' : 'text-slate-400'}`}>
                           {diff === 0 ? '● Hari Ini' : diff > 0 ? `${diff} hari lagi` : `${Math.abs(diff)} hari lalu`}
                         </span>
                       </div>
                     </td>
 
                     {/* Action */}
-                    <td className="px-4 py-4 text-center align-middle no-print">
+                    <td className="px-3 py-3.5 text-center align-middle no-print">
                       <button
                         onClick={() => handleCopyRow(item)}
-                        className={`p-2 rounded-xl border transition-colors ${
+                        className={`p-1.5 rounded-lg border transition-colors ${
                           isHighlight 
                             ? 'bg-white/20 hover:bg-white/30 text-white border-white/30' 
                             : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border-slate-200'
@@ -294,20 +317,20 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
                 onClick={onToggleDividen}
                 className="bg-purple-50/70 hover:bg-purple-100/70 cursor-pointer transition-colors border-y-2 border-purple-200 group"
               >
-                <td colSpan={5} className="px-5 py-4">
+                <td colSpan={5} className="px-5 py-3.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-purple-100 border border-purple-300 flex items-center justify-center text-purple-700 shadow-xs">
-                        <Coins className="w-5 h-5" />
+                      <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-300 flex items-center justify-center text-purple-700 shadow-xs">
+                        <Coins className="w-4 h-4" />
                       </div>
                       <div>
-                        <h3 className="text-sm md:text-base font-extrabold text-purple-950 flex items-center gap-2">
+                        <h3 className="text-xs sm:text-sm md:text-base font-extrabold text-purple-950 flex items-center gap-2">
                           <span>Jadwal Pembagian Dividen Tunai</span>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold">
+                          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold">
                             6 Jadwal Sah
                           </span>
                         </h3>
-                        <p className="text-xs text-purple-800/80 mt-0.5">
+                        <p className="text-[11px] sm:text-xs text-purple-800/80 mt-0.5">
                           Klik untuk {showDividen ? 'menyembunyikan' : 'menampilkan'} agenda cum/ex date dan pembayaran dividen.
                         </p>
                       </div>
@@ -334,15 +357,15 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
                     key={item.id}
                     className={`border-b ${style.row} transition-colors group`}
                   >
-                    <td className="px-4 py-4 text-center font-black opacity-70">
+                    <td className="px-3 py-3.5 text-center font-black opacity-70">
                       {filteredNonDividen.length + idx + 1}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3.5">
                       <div className="flex items-start gap-2.5">
                         <span className="shrink-0 mt-0.5">{style.icon}</span>
                         <div>
-                          <span className={`font-black text-sm md:text-base leading-snug block ${isRec ? 'text-white' : 'text-purple-950'}`}>
+                          <span className={`font-black text-xs sm:text-sm md:text-base leading-snug block ${isRec ? 'text-white' : 'text-purple-950'}`}>
                             {item.title}
                           </span>
                           {item.notes && (
@@ -354,12 +377,12 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
                       </div>
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3.5">
                       <p className={`text-xs leading-relaxed ${isRec ? 'text-white/90 font-medium' : 'text-slate-700 font-semibold'}`}>
                         {item.desc}
                       </p>
                       {item.legalBasis && (
-                        <span className={`inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded ${
+                        <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded ${
                           isRec ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-800 border border-purple-200'
                         }`}>
                           {item.legalBasis}
@@ -367,22 +390,22 @@ export const TimelineTable: React.FC<TimelineTableProps> = ({
                       )}
                     </td>
 
-                    <td className="px-5 py-4 whitespace-nowrap align-middle">
+                    <td className="px-4 py-3.5 align-middle">
                       <div className="flex flex-col gap-1">
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs md:text-sm font-extrabold ${style.pill} shadow-xs w-fit`}>
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{formatDateIndonesian(item.date)}</span>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs md:text-sm font-extrabold ${style.pill} shadow-xs w-fit`}>
+                          <Calendar className="w-3.5 h-3.5 shrink-0" />
+                          <span className="whitespace-normal sm:whitespace-nowrap">{formatDateIndonesian(item.date)}</span>
                         </div>
-                        <span className={`text-[10px] font-bold px-1.5 ${isRec ? 'text-indigo-100' : diff === 0 ? 'text-rose-600' : 'text-purple-700/70'}`}>
+                        <span className={`text-[10px] font-bold px-1 ${isRec ? 'text-indigo-100' : diff === 0 ? 'text-rose-600' : 'text-purple-700/70'}`}>
                           {diff === 0 ? '● Hari Ini' : diff > 0 ? `${diff} hari lagi` : `${Math.abs(diff)} hari lalu`}
                         </span>
                       </div>
                     </td>
 
-                    <td className="px-4 py-4 text-center align-middle no-print">
+                    <td className="px-3 py-3.5 text-center align-middle no-print">
                       <button
                         onClick={() => handleCopyRow(item)}
-                        className={`p-2 rounded-xl border transition-colors ${
+                        className={`p-1.5 rounded-lg border transition-colors ${
                           isRec 
                             ? 'bg-white/20 hover:bg-white/30 text-white border-white/30' 
                             : 'bg-white hover:bg-purple-100 text-purple-700 border-purple-200'
