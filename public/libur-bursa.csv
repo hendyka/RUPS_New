@@ -1,23 +1,48 @@
-Hari;Tgl;Bulan;Tahun;Keterangan
-Kamis;1;Januari;2026;Tahun Baru 2026 Masehi
-Jumat;16;Januari;2026;Isra Mikraj Nabi Muhammad SAW
-Senin;16;Februari;2026;Cuti Bersama Tahun Baru Imlek 2577 Kongzili
-Selasa;17;Februari;2026;Tahun Baru Imlek 2577 Kongzili
-Rabu;18;Maret;2026;Cuti Bersama Hari Suci Nyepi Tahun Baru Saka 1948
-Kamis;19;Maret;2026;Hari Suci Nyepi Tahun Baru Saka 1948
-Jumat;20;Maret;2026;Cuti Bersama Idul Fitri 1447 Hijriah
-Senin;23;Maret;2026;Cuti Bersama Idul Fitri 1447 Hijriah
-Selasa;24;Maret;2026;Cuti Bersama Idul Fitri 1447 Hijriah
-Jumat;3;April;2026;Wafat Yesus Kristus
-Jumat;1;Mei;2026;Hari Buruh Internasional
-Kamis;14;Mei;2026;Kenaikan Yesus Kristus
-Jumat;15;Mei;2026;Cuti Bersama Kenaikan Yesus Kristus
-Rabu;27;Mei;2026;Idul Adha 1447 Hijriah
-Kamis;28;Mei;2026;Cuti Bersama Hari Raya Idul Adha 1447 Hijriah
-Senin;1;Juni;2026;Hari Lahir Pancasila
-Selasa;16;Juni;2026;1 Muharam Tahun Baru Islam 1448 Hijriah
-Senin;17;Agustus;2026;Proklamasi Kemerdekaan
-Selasa;25;Agustus;2026;Maulid Nabi Muhammad SAW
-Kamis;24;Desember;2026;Cuti Bersama Kelahiran Yesus Kristus
-Jumat;25;Desember;2026;Kelahiran Yesus Kristus
-Kamis;31;Desember;2026;Libur Bursa
+Hari,Tgl,Bulan,Tahun,Keterangan
+Kamis,1,Januari,2026,Tahun Baru 2026 Masehi
+Jumat,16,Januari,2026,Isra Mikraj Nabi Muhammad SAW
+Senin,16,Februari,2026,Cuti Bersama Tahun Baru Imlek 2577 Kongzili
+Selasa,17,Februari,2026,Tahun Baru Imlek 2577 Kongzili
+Rabu,18,Maret,2026,Cuti Bersama Hari Suci Nyepi Tahun Baru Saka 1948
+Kamis,19,Maret,2026,Hari Suci Nyepi Tahun Baru Saka 1948
+Jumat,20,Maret,2026,Cuti Bersama Idul Fitri 1447 Hijriah
+Senin,23,Maret,2026,Cuti Bersama Idul Fitri 1447 Hijriah
+Selasa,24,Maret,2026,Cuti Bersama Idul Fitri 1447 Hijriah
+Jumat,3,April,2026,Wafat Yesus Kristus
+Jumat,1,Mei,2026,Hari Buruh Internasional
+Kamis,14,Mei,2026,Kenaikan Yesus Kristus
+Jumat,15,Mei,2026,Cuti Bersama Kenaikan Yesus Kristus
+Rabu,27,Mei,2026,Idul Adha 1447 Hijriah
+Kamis,28,Mei,2026,Cuti Bersama Hari Raya Idul Adha 1447 Hijriah
+Senin,1,Juni,2026,Hari Lahir Pancasila
+Selasa,16,Juni,2026,1 Muharam Tahun Baru Islam 1448 Hijriah
+Senin,17,Agustus,2026,Proklamasi Kemerdekaan
+Selasa,25,Agustus,2026,Maulid Nabi Muhammad SAW
+Kamis,24,Desember,2026,Cuti Bersama Kelahiran Yesus Kristus
+Jumat,25,Desember,2026,Kelahiran Yesus Kristus
+Kamis,31,Desember,2026,Libur Bursa
+Jumat,1,Januari,2027,Tahun Baru 2027 Masehi
+Selasa,5,Januari,2027,Isra Mikraj Nabi Muhammad S.A.W. 1448 Hijriah
+Sabtu,6,Februari,2027,Tahun Baru Imlek 2578 Kongzili
+Senin,8,Maret,2027,Hari Suci Nyepi (Tahun Baru Saka 1949)
+Rabu,10,Maret,2027,Idul Fitri 1448 Hijriah
+Kamis,11,Maret,2027,Idul Fitri 1448 Hijriah
+Jumat,26,Maret,2027,Wafat Yesus Kristus
+Minggu,28,Maret,2027,Kebangkitan Yesus Kristus (Paskah)
+Sabtu,1,Mei,2027,Hari Buruh Internasional
+Kamis,6,Mei,2027,Kenaikan Yesus Kristus
+Senin,17,Mei,2027,Idul Adha 1448 Hijriah
+Kamis,20,Mei,2027,Hari Raya Waisak 2571 BE
+Selasa,1,Juni,2027,Hari Lahir Pancasila
+Minggu,6,Juni,2027,1 Muharam Tahun Baru Islam 1449 Hijriah
+Minggu,15,Agustus,2027,Maulid Nabi Muhammad S.A.W.
+Selasa,17,Agustus,2027,Proklamasi Kemerdekaan
+Sabtu,25,Desember,2027,Kelahiran Yesus Kristus
+Minggu,26,Desember,2027,Isra Mikraj Nabi Muhammad S.A.W. 1449 Hijriah
+Jumat,5,Februari,2027,Tahun Baru Imlek 2578 Kongzili
+Selasa,9,Maret,2027,Idul Fitri 1448 Hijriah
+Jumat,12,Maret,2027,Idul Fitri 1448 Hijriah
+Senin,15,Maret,2027,Idul Fitri 1448 Hijriah
+Kamis,25,Maret,2027,Wafat Yesus Kristus
+Selasa,18,Mei,2027,Idul Adha 1448 Hijriah
+Rabu,19,Mei,2027,Hari Raya Waisak 2571 BE
