@@ -7,9 +7,10 @@ import {
   isWeekendOrHoliday, 
   parseDate, 
   formatDateIso,
+  parseHolidayCsv,
   MONTH_MAP 
 } from './utils/rupsCalculator';
-import { TimelineItem, AlertNotification, ViewMode } from './types';
+import { TimelineItem, AlertNotification, ViewMode, HolidayItem } from './types';
 import { Header } from './components/Header';
 import { CalculatorCard } from './components/CalculatorCard';
 import { HolidaySidebar } from './components/HolidaySidebar';
@@ -32,10 +33,11 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // State: Default holidays
-  const [holidays, setHolidays] = useState<string[]>(
-    () => DEFAULT_HOLIDAYS_2026.map((h) => h.date).sort()
-  );
+  // State: Default holidays as HolidayItem[]
+  const [holidays, setHolidays] = useState<HolidayItem[]>(() => DEFAULT_HOLIDAYS_2026);
+
+  // Derived: holiday date strings for calculations
+  const holidayDates = useMemo(() => holidays.map((h) => h.date).sort(), [holidays]);
 
   // State: Default noticeDate = Hari ini (Today)
   const [noticeDate, setNoticeDate] = useState<string>(() => formatDateIso(new Date()));
@@ -64,47 +66,17 @@ export default function App() {
     }, 4500);
   };
 
-  // Attempt auto-load of /libur-bursa.csv on mount
+  // Attempt auto-load of /libur-bursa.csv on mount (with cache-busting to immediately reflect newly uploaded CSVs)
   useEffect(() => {
-    fetch('/libur-bursa.csv')
+    fetch(`/libur-bursa.csv?v=${Date.now()}`, { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error('CSV default not found');
         return res.text();
       })
       .then((csvText) => {
-        const lines = csvText.split(/\r?\n/);
-        if (lines.length === 0) return;
-        const delimiter = lines[0].includes(';') ? ';' : lines[0].includes('\t') ? '\t' : ',';
-        const headers = lines[0].toLowerCase().split(delimiter).map((s) => s.trim());
-        const tglIdx = headers.indexOf('tgl');
-        const bulanIdx = headers.indexOf('bulan');
-        const tahunIdx = headers.indexOf('tahun');
-
-        const loadedHolidays: string[] = [];
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-          const cols = line.split(delimiter).map((c) => c.trim());
-
-          let parsed: string | null = null;
-          if (tglIdx > -1 && bulanIdx > -1 && tahunIdx > -1 && cols[tglIdx] && cols[bulanIdx] && cols[tahunIdx]) {
-            const day = String(cols[tglIdx]).padStart(2, '0');
-            const monthStr = cols[bulanIdx].toLowerCase();
-            const monthNum = MONTH_MAP[monthStr] || '01';
-            const year = cols[tahunIdx];
-            parsed = `${year}-${monthNum}-${day}`;
-          } else {
-            const match = line.match(/\d{4}-\d{2}-\d{2}/);
-            if (match) parsed = match[0];
-          }
-
-          if (parsed && /^\d{4}-\d{2}-\d{2}$/.test(parsed) && !loadedHolidays.includes(parsed)) {
-            loadedHolidays.push(parsed);
-          }
-        }
-
+        const loadedHolidays = parseHolidayCsv(csvText);
         if (loadedHolidays.length > 0) {
-          setHolidays(loadedHolidays.sort());
+          setHolidays(loadedHolidays);
         }
       })
       .catch(() => {
@@ -114,24 +86,24 @@ export default function App() {
 
   // Validate RUPS Date against weekends and holidays
   useEffect(() => {
-    if (rupsDate && isWeekendOrHoliday(parseDate(rupsDate), holidays)) {
-      const shifted = addWorkDays(rupsDate, 0, holidays);
+    if (rupsDate && isWeekendOrHoliday(parseDate(rupsDate), holidayDates)) {
+      const shifted = addWorkDays(rupsDate, 0, holidayDates);
       setRupsDate(shifted);
       setIsDateShifted(true);
       showAlert('Tanggal Acara RUPS otomatis digeser karena jatuh pada Akhir Pekan / Hari Libur Bursa.', 'alert');
     } else {
       setIsDateShifted(false);
     }
-  }, [rupsDate, holidays]);
+  }, [rupsDate, holidayDates]);
 
   // Calculations
   const earliestRupsDate = useMemo(() => {
-    return calculateEarliestRupsDate(noticeDate, holidays);
-  }, [noticeDate, holidays]);
+    return calculateEarliestRupsDate(noticeDate, holidayDates);
+  }, [noticeDate, holidayDates]);
 
   const timelineItems = useMemo(() => {
-    return calculateRupsTimeline(rupsDate, holidays);
-  }, [rupsDate, holidays]);
+    return calculateRupsTimeline(rupsDate, holidayDates);
+  }, [rupsDate, holidayDates]);
 
   const handleApplyEarliestRups = () => {
     if (earliestRupsDate) {
@@ -140,24 +112,28 @@ export default function App() {
     }
   };
 
-  const handleAddHoliday = (date: string) => {
-    if (!holidays.includes(date)) {
-      setHolidays([...holidays, date].sort());
+  const handleAddHoliday = (date: string, name?: string) => {
+    if (!holidays.some((h) => h.date === date)) {
+      const label = name?.trim() || 'Libur Bursa';
+      setHolidays([...holidays, { date, name: label }].sort((a, b) => a.date.localeCompare(b.date)));
     }
   };
 
   const handleRemoveHoliday = (date: string) => {
-    setHolidays(holidays.filter((d) => d !== date));
+    setHolidays(holidays.filter((d) => d.date !== date));
     showAlert('Hari libur bursa berhasil dihapus.', 'success');
   };
 
   const handleResetHolidays = () => {
-    setHolidays(DEFAULT_HOLIDAYS_2026.map((h) => h.date).sort());
+    setHolidays(DEFAULT_HOLIDAYS_2026);
     showAlert('Daftar hari libur bursa berhasil direset ke kalender standar 2026.', 'success');
   };
 
-  const handleBatchAddHolidays = (newDates: string[]) => {
-    const combined = Array.from(new Set([...holidays, ...newDates])).sort();
+  const handleBatchAddHolidays = (newItems: HolidayItem[]) => {
+    const map = new Map<string, HolidayItem>();
+    holidays.forEach((h) => map.set(h.date, h));
+    newItems.forEach((h) => map.set(h.date, h));
+    const combined = Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
     setHolidays(combined);
   };
 
@@ -350,6 +326,17 @@ export default function App() {
               <TimelineVisual
                 items={timelineItems}
                 rupsDate={rupsDate}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => {
+                  const nextState = !isSidebarOpen;
+                  setIsSidebarOpen(nextState);
+                  showAlert(
+                    nextState 
+                      ? 'Panel Kalender & Libur Bursa dibuka.' 
+                      : 'Panel Kalender disembunyikan. Tampilan alur diperluas.',
+                    'success'
+                  );
+                }}
               />
             )}
 
@@ -357,7 +344,19 @@ export default function App() {
               <CalendarView
                 items={timelineItems}
                 rupsDate={rupsDate}
-                holidayDates={holidays}
+                holidayDates={holidayDates}
+                holidays={holidays}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => {
+                  const nextState = !isSidebarOpen;
+                  setIsSidebarOpen(nextState);
+                  showAlert(
+                    nextState 
+                      ? 'Panel Kalender & Libur Bursa dibuka.' 
+                      : 'Panel Kalender disembunyikan. Tampilan matriks kalender diperluas.',
+                    'success'
+                  );
+                }}
               />
             )}
           </main>
@@ -389,7 +388,7 @@ export default function App() {
         onClose={() => setIsSingleHtmlModalOpen(false)}
         rupsDate={rupsDate}
         noticeDate={noticeDate}
-        holidayDates={holidays}
+        holidayDates={holidayDates}
         onShowAlert={showAlert}
       />
 
