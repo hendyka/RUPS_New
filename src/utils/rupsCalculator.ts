@@ -1,29 +1,6 @@
 import { CategoryType, HolidayItem, TimelineItem } from '../types';
-
-export const DEFAULT_HOLIDAYS_2026: HolidayItem[] = [
-  { date: '2026-01-01', name: 'Tahun Baru 2026 Masehi' },
-  { date: '2026-01-16', name: 'Isra Mikraj Nabi Muhammad SAW' },
-  { date: '2026-02-16', name: 'Cuti Bersama Tahun Baru Imlek 2577' },
-  { date: '2026-02-17', name: 'Tahun Baru Imlek 2577 Kongzili' },
-  { date: '2026-03-18', name: 'Cuti Bersama Hari Suci Nyepi' },
-  { date: '2026-03-19', name: 'Hari Suci Nyepi Tahun Baru Saka 1948' },
-  { date: '2026-03-20', name: 'Cuti Bersama Idul Fitri 1447 H' },
-  { date: '2026-03-23', name: 'Cuti Bersama Idul Fitri 1447 H' },
-  { date: '2026-03-24', name: 'Cuti Bersama Idul Fitri 1447 H' },
-  { date: '2026-04-03', name: 'Wafat Yesus Kristus' },
-  { date: '2026-05-01', name: 'Hari Buruh Internasional' },
-  { date: '2026-05-14', name: 'Kenaikan Yesus Kristus' },
-  { date: '2026-05-15', name: 'Cuti Bersama Kenaikan Yesus Kristus' },
-  { date: '2026-05-27', name: 'Hari Raya Idul Adha 1447 H' },
-  { date: '2026-05-28', name: 'Cuti Bersama Idul Adha 1447 H' },
-  { date: '2026-06-01', name: 'Hari Lahir Pancasila' },
-  { date: '2026-06-16', name: 'Tahun Baru Islam 1448 Hijriah' },
-  { date: '2026-08-17', name: 'Hari Kemerdekaan RI' },
-  { date: '2026-08-25', name: 'Maulid Nabi Muhammad SAW' },
-  { date: '2026-12-24', name: 'Cuti Bersama Kelahiran Yesus Kristus' },
-  { date: '2026-12-25', name: 'Kelahiran Yesus Kristus' },
-  { date: '2026-12-31', name: 'Libur Tutup Tahun Bursa BEI' },
-];
+export { DEFAULT_HOLIDAYS_2026 } from './holiday';
+import { DEFAULT_HOLIDAYS_2026 } from './holiday';
 
 export const MONTH_MAP: Record<string, string> = {
   januari: '01', jan: '01',
@@ -39,6 +16,56 @@ export const MONTH_MAP: Record<string, string> = {
   november: '11', nov: '11',
   desember: '12', des: '12', dec: '12',
 };
+
+// Parse CSV text (semicolon, comma, tab) into structured HolidayItem array
+export function parseHolidayCsv(csvText: string): HolidayItem[] {
+  const lines = csvText.split(/\r?\n/);
+  if (lines.length === 0) return [];
+  const delimiter = lines[0].includes(';') ? ';' : lines[0].includes('\t') ? '\t' : ',';
+  const headers = lines[0].toLowerCase().split(delimiter).map((s) => s.trim());
+  const tglIdx = headers.indexOf('tgl');
+  const bulanIdx = headers.indexOf('bulan');
+  const tahunIdx = headers.indexOf('tahun');
+  const ketIdx = headers.findIndex(
+    (h) => h.includes('ket') || h.includes('nama') || h.includes('name') || h.includes('desk') || h.includes('libur')
+  );
+
+  const results: HolidayItem[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const cols = line.split(delimiter).map((c) => c.trim());
+
+    let parsedDate: string | null = null;
+    let holidayName = 'Libur Bursa';
+
+    if (tglIdx > -1 && bulanIdx > -1 && tahunIdx > -1 && cols[tglIdx] && cols[bulanIdx] && cols[tahunIdx]) {
+      const day = String(cols[tglIdx]).padStart(2, '0');
+      const monthStr = cols[bulanIdx].toLowerCase();
+      const monthNum = MONTH_MAP[monthStr] || '01';
+      const year = cols[tahunIdx];
+      parsedDate = `${year}-${monthNum}-${day}`;
+    } else {
+      const match = line.match(/\d{4}-\d{2}-\d{2}/);
+      if (match) parsedDate = match[0];
+    }
+
+    if (ketIdx > -1 && cols[ketIdx]) {
+      holidayName = cols[ketIdx];
+    } else if (parsedDate) {
+      const def = DEFAULT_HOLIDAYS_2026.find((dh) => dh.date === parsedDate);
+      if (def) holidayName = def.name;
+    }
+
+    if (parsedDate && /^\d{4}-\d{2}-\d{2}$/.test(parsedDate)) {
+      if (!results.some((r) => r.date === parsedDate)) {
+        results.push({ date: parsedDate, name: holidayName });
+      }
+    }
+  }
+
+  return results.sort((a, b) => a.date.localeCompare(b.date));
+}
 
 // Safe date parsing to midday to avoid timezone offset glitches
 export function parseDate(dateStr: string): Date {
