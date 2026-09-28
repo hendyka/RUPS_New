@@ -1,23 +1,52 @@
 import React from 'react';
 import { TimelineItem } from '../types';
 import { formatDateIndonesian, getDaysDiffFromToday } from '../utils/rupsCalculator';
-import { CheckCircle, Clock, Calendar, FileText, AlertCircle, Coins } from 'lucide-react';
+import { CheckCircle, Clock, Calendar, FileText, AlertCircle, Coins, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 interface TimelineVisualProps {
   items: TimelineItem[];
   rupsDate: string;
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
-export const TimelineVisual: React.FC<TimelineVisualProps> = ({ items, rupsDate }) => {
+export const TimelineVisual: React.FC<TimelineVisualProps> = ({ 
+  items, 
+  rupsDate,
+  isSidebarOpen = true,
+  onToggleSidebar
+}) => {
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
-      <div>
-        <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
-          Visual Stepper & Alur Tahapan RUPS
-        </h2>
-        <p className="text-xs text-slate-500 font-medium mt-1">
-          Visualisasi progres tahapan dari Pra-RUPS, Hari Pelaksanaan, Pasca-RUPS, hingga Dividen Tunai.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+            Visual Stepper & Alur Tahapan RUPS
+          </h2>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Visualisasi progres tahapan dari Pra-RUPS, Hari Pelaksanaan, Pasca-RUPS, hingga Dividen Tunai.
+          </p>
+        </div>
+
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center gap-1.5 shadow-xs transition-colors self-start sm:self-auto"
+            title={isSidebarOpen ? 'Sembunyikan panel samping' : 'Tampilkan panel samping'}
+          >
+            {isSidebarOpen ? (
+              <>
+                <PanelLeftClose className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Perlebar Tampilan</span>
+              </>
+            ) : (
+              <>
+                <PanelLeftOpen className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Tampilkan Panel</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       <div className="relative pl-6 md:pl-10 space-y-8 before:absolute before:left-3 md:before:left-5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
